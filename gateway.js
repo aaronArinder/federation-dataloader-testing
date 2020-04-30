@@ -19,20 +19,6 @@ const gateway = new ApolloGateway({
   __exposeQueryPlanExperimental: false,
 });
 
-function inventoryLoader () {
-    console.log('INVENTORY FROM GATEWAY :: new dataloader instance');
-    return new DataLoader(batchGetInventory);
-}
-
-function batchGetInventory (upcs) {
-    console.log('INVENTORY FROM GATEWAY :: using batch fn with upcs: ', upcs);
-    return new Promise(res => {
-        const batched = upcs.map((upc) => {
-            return inventory.some(({upc: inventoryUpc, inStock }) => inventoryUpc === upc && inStock);
-        });
-        return res(batched);
-    });
-}
 
 (async () => {
   const server = new ApolloServer({
@@ -42,10 +28,6 @@ function batchGetInventory (upcs) {
       engine: false,
       subscriptions: false,
       gateway,
-      context: session => {
-        //session.inventoryLoader = inventoryLoader();
-        return 'nah';
-      }
     });
 
   server.listen().then(({ url }) => {
