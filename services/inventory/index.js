@@ -15,11 +15,15 @@ const typeDefs = gql`
 
 const resolvers = {
   Product: {
-    __resolveReference(object, context) {
-      //console.log('object in inventory ref resolver', object);
+    __resolveReference: async (object, context) => {
+      if (!context.loaded) {
+          context[1].loadMany(object.upcs)
+          context.loaded = true;
+      }
+
       return {
         ...object,
-        ...context[1].load(object.upc)
+        inStock: await context[1].load(object.upc)
       };
     },
     shippingEstimate(object) {
