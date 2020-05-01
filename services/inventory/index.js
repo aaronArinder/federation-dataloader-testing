@@ -3,9 +3,8 @@ const { buildFederatedSchema } = require("@apollo/federation");
 const DataLoader = require('dataloader');
 
 const typeDefs = gql`
-  extend type Product @key(fields: "upc upcs") {
+  extend type Product @key(fields: "upc") {
     upc: String! @external
-    upcs: [ String ] @external
     weight: Int @external
     price: Int @external
     inStock: Boolean
@@ -15,15 +14,10 @@ const typeDefs = gql`
 
 const resolvers = {
   Product: {
-    __resolveReference: async (object, context) => {
-      if (!context.loaded) {
-          context[1].loadMany(object.upcs)
-          context.loaded = true;
-      }
-
+    __resolveReference: async (object) => {
       return {
         ...object,
-        inStock: await context[1].load(object.upc)
+        inStock: await inventoryLoader().load(object.upc)
       };
     },
     shippingEstimate(object) {
@@ -36,9 +30,9 @@ const resolvers = {
 };
 
 const server = new ApolloServer({
-  // In _this_ fed service, not gateway or a parent node's fed service, we're
-  // creating and appending a dataloader for the batch inventory call
-  context: (...args) => ([ ...args, inventoryLoader() ]),
+  /*
+   * note that we're taken out the context here
+   * */
   schema: buildFederatedSchema([
     {
       typeDefs,
