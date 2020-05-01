@@ -28,6 +28,11 @@ const gateway = new ApolloGateway({
       engine: false,
       subscriptions: false,
       gateway,
+
+      /*
+       * Notice the lack of context here: we're not relying on gateway's context
+       * */
+
     });
 
   server.listen().then(({ url }) => {

@@ -36,6 +36,8 @@ const resolvers = {
 };
 
 const server = new ApolloServer({
+  // In _this_ fed service, not gateway or a parent node's fed service, we're
+  // creating and appending a dataloader for the batch inventory call
   context: (...args) => ([ ...args, inventoryLoader() ]),
   schema: buildFederatedSchema([
     {
